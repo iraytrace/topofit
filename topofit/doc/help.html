@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>TopoFit Help</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>TopoFit Documentation</h1>
+        <p>This addon provides an elegant, non-destructive, and entirely <strong>Edit Mode-centric</strong> single-mesh
+            workflow for creating corrective shape keys, especially for fitting clean base topologies to raw human scan
+            data.</p>
+
+        <p>By operating directly on the main mesh's Edit BMesh shape layers, you avoid complex parenting, armature sync
+            bugs, and visual clutter.</p>
+
+        <h2>Core Plugin Workflow</h2>
+        <p>The workflow for TopoFit is guided by the main panel, which dynamically displays instructions based on the current state of your mesh. The "Status & Workflow Guidance" section, typically found at the bottom of the TopoFit panel and collapsed by default, provides detailed steps and status updates. Follow these phases to effectively use the addon:</p>
+        <ol>
+            <li>
+                <h3>🧬 Step 1: Designate Landmarks</h3>
+                <p>Select your base character mesh, enter <strong>Edit Mode</strong>, and select the key vertices you
+                    want to act as landmark control points (e.g., corners of the eyes and mouth, key nose joints,
+                    jawline points, joint positions, etc.).</p>
+
+                <p>For symmetrical topologies, you only have to select points on one side of the body. You can use the
+                    <strong>Select Mirrored</strong> operator in the Landmark Setup panel to automatically select
+                    equivalent landmarks on the opposite side.</p>
+
+                <p>Once selected, click <strong>Add Selected to Landmarks</strong>. This registers these vertices into
+                    the <code>TopoFit_Landmarks</code> vertex group, which the fitting algorithm uses for guidance.</p>
+            </li>
+
+            <li>
+                <h3>⚠️ Step 2: Set Active Shape Key</h3>
+                <p>To protect your baseline human geometry from destructive edits, the addon prevents landmark
+                    adjustments directly on the default "Basis" shape key.</p>
+                <p>In the standard Blender <strong>Shape Keys</strong> panel, select or create a custom target shape key
+                    (e.g., <em>"TopoFit_Target"</em>) and make sure its value is set to <strong>1.0</strong>. The addon also provides a <strong>Create & Set Reshape Key</strong> operator for convenience.</p>
+            </li>
+
+            <li>
+                <h3>🔧 Step 3: Align Landmarks & Symmetrize</h3>
+                <p>With your landmarks set up and your target shape key active, you are ready to match your character mesh to
+                    your scan data:</p>
+                <ul>
+                    <li><strong>Toggle Landmark Mask:</strong> Click this button to temporarily isolate your landmark
+                        vertices. The addon applies a non-destructive <code>MASK</code> modifier, hiding all other
+                        vertices in both the viewport and Edit Mode so you can work without visual clutter.</li>
+                    <li><strong>Reposition:</strong> Grab, slide, or snap the visible landmark vertices directly to your
+                        target 3D scan surface.</li>
+                    <li><strong>Apply Symmetry:</strong> If you've positioned landmarks on one side of the body, click
+                        this button to instantly mirror those displacements relative to the basis position of their
+                        symmetrical partners across the X-axis. This works perfectly even while the mask is active!</li>
+                    <li><strong>Revert Selected to Basis:</strong> Reset any selected landmarks back to their original
+                        position relative to the Basis shape key.</li>
+                    <li><strong>Refresh Mirror Map:</strong> Click this if you have modified the topology or if
+                        symmetrical mirroring is behaving unexpectedly.</li>
+                </ul>
+            </li>
+
+            <li>
+                <h3>🚀 Step 4: Fit Remaining Mesh</h3>
+                <p>Once you are satisfied with the landmark placement:</p>
+                <p>Click <strong>Fit Remaining Mesh (IDW)</strong> directly inside Edit Mode. The addon will immediately
+                    trigger a geodesic distance-weighted Inverse Distance Weighting (IDW) algorithm. It will calculate
+                    the displacement deltas of your landmarks and smoothly interpolate the position of every other
+                    non-landmark vertex in your active shape key to perfectly fit the body structure.</p>
+                <p>You can adjust the <strong>Falloff Power</strong> (higher values localize the influence of landmarks;
+                    lower values distribute influence more broadly) and the <strong>Max Influence Distance</strong> in
+                    the operator settings box to control the deformation behavior.</p>
+            </li>
+        </ol>
+    </div>
+</body>
+
+</html>
