@@ -14,7 +14,7 @@ from . import properties
 bl_info = {
     "name": "TopoFit",
     "author": "Lee",
-    "version": (1, 63, 1), # Updated version for tracking changes
+    "version": (1, 64, 0), # Updated version for tracking changes
     "blender": (3, 0, 0),
     "location": "View3D > Sidebar > TopoFit",
     "description": "Landmark-guided geodesic topology fitting and deformation.",
