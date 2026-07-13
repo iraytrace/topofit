@@ -6,6 +6,8 @@
 
 This addon operates entirely within Blender's Edit Mode, offering a seamless and intuitive user experience by leveraging vertex groups, shape keys, and custom viewport masking.
 
+
+
 ## 🛠️ Developer Setup & Getting Started
 
 To set up this project for development in VSCode with the Blender Development extension:
@@ -41,6 +43,8 @@ Update your `.vscode/settings.json` file (create it if it doesn't exist in your 
 ```json .vscode/settings.json
 {
     "blender.addon.path": "${workspaceFolder}/topofit",
+	"blender.addon.loadDirectory": "topofit",
+	"blender.addon.sourceDirectory": "topofit",
     "blender.executables": {
         "blender5.1": "C:\\Program Files\\Blender Foundation\\Blender 5.1\\blender.exe" // Adjust to your Blender install path
     }

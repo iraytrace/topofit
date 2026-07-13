@@ -1,0 +1,5 @@
+{
+	"blender.addon.path": "${workspaceFolder}/topofit",
+	"blender.addon.loadDirectory": "topofit",
+	"blender.addon.sourceDirectory": "topofit"
+}
