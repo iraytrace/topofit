@@ -6,7 +6,9 @@ This document provides essential context, architectural patterns, and developmen
 
 ## 🧬 Project Overview: TopoFit Blender Addon
 
-**TopoFit** is an elegant, single-mesh landmark-guided shape deformation tool built for Blender. Its primary purpose is to non-destructively fit a standard base topology (e.g., a clean human mesh) to raw, potentially messy, high-resolution scan data.
+**TopoFit** is an elegant, single-mesh landmark-guided shape deformation addon for Blender. Its primary purpose is to non-destructively fit a standard base topology (e.g., a clean human mesh) to raw, potentially messy, high-resolution 3D scan data.
+
+This addon operates entirely within Blender's Edit Mode, offering a seamless and intuitive user experience by leveraging vertex groups, shape keys, and custom viewport masking.
 
 ---
 
@@ -17,7 +19,7 @@ This document provides essential context, architectural patterns, and developmen
 *   **Landmark Storage:** Standard Blender vertex groups, specifically one named `"TopoFit_Landmarks"`.
 *   **Deformation Storage:** Native Blender Shape Keys. Edits are strictly prevented on the "Basis" key to ensure non-destructive workflow.
 *   **Fitting Algorithm:** Sparse landmark coordinates are interpolated across the rest of the mesh using a geodesic-distance-weighted Inverse Distance Weighting (IDW) algorithm.
-*   **Configuration:** Custom `bpy.props.BoolProperty` and `StringProperty` are registered on `bpy.types.Scene` for user settings.
+*   **Configuration:** Custom `bpy.props.BoolProperty` and `StringProperty` are registered on `bpy.types.Scene` and accessed via `bpy.context.scene.topofit_props.topofit_auto_create_key` and `bpy.context.scene.topofit_props.topofit_target_key_name` respectively.
 
 ---
 
@@ -51,12 +53,12 @@ When assisting with this codebase, **always adhere to the following architectura
     bm.verts[idx][shape_layer] = new_pos # Update the shape key data
     bm.verts[idx].co = new_pos           # Update the live viewport coordinate
     ```
-*   **Always Flush and Redraw:** After any significant mesh data modification, ensure Blender updates its internal state and redraws the viewport:
+*   **Always Flush and Redraw:** After any significant mesh data modification, ensure Blender updates its internal state and redraws the viewport. This sequence is critical:
     ```python
     bm.normal_update()
     bm.select_flush(True)
-    bmesh.update_edit_mesh(obj.data)
-    obj.data.update()
+    bmesh.update_edit_mesh(obj.data) # This commits BMesh changes to mesh.data
+    obj.data.update() # This updates the dependency graph for modifiers, etc.
     # Safely redraw only if context.area exists (not in headless/CLI mode)
     if context.area:
         context.area.tag_redraw()
@@ -80,3 +82,26 @@ When assisting with this codebase, **always adhere to the following architectura
         mask_mod.show_on_cage = True
         obj.update_tag()
         context.view_layer.update()
+    ```
+
+### 3. Native BMesh Vertex Group Calculations
+*   **Problem:** Blender's main mesh data (`obj.data.vertices[i].groups`) is not always immediately synchronized with live Edit Mode BMesh data.
+*   **Rule:** When in Edit Mode, helper functions (like `get_landmark_indices`) that read vertex group assignments **must read directly from the live BMesh deform layer** (`bm.verts.layers.deform.active`) to ensure accuracy and real-time responsiveness. Remember to free the BMesh instance with `bmesh.free(bm)` if you create it within a utility function that doesn't return the BMesh object.
+    ```python
+    if obj.mode == 'EDIT':
+        bm = bmesh.from_edit_mesh(obj.data)
+        weight_layer = bm.verts.layers.deform.active
+        if weight_layer:
+            # Iterate and check v[weight_layer][vg.index]
+        bmesh.free(bm) # Important!
+    ```
+
+### 4. Robust Blender Context Handling
+*   **Problem:** `bpy.ops` operators are context-sensitive and can fail if the Blender UI's focus is unexpectedly elsewhere (e.g., a different panel, a popup).
+*   **Rule:** Where possible, **avoid using `bpy.ops` inside iterative loops or complex calculations**. Prefer direct manipulation of raw data layers via the `BMesh` API. If `bpy.ops` is unavoidable (e.g., `bpy.ops.object.mode_set`), ensure proper mode switching is handled and restored. For addon registration (`register`/`unregister`), ensure properties are handled robustly to avoid `AttributeError` on `del`.
+
+### 5. Automated Testing is Paramount
+*   **Rule:** Any new feature or significant bug fix should be accompanied by a corresponding update to `test_topofit.py`. Tests should be robust, using `try/except` for individual tests and providing a comprehensive summary without stopping on the first failure. Test execution must be safe in headless (CLI) environments, guarding `context.area.tag_redraw()` calls.
+
+### 6. Addon Naming Convention
+*   **Rule:** All custom Blender operators (`bpy.types.Operator`), panels (`bpy.types.Panel`), and custom data properties (`bpy.props.Property`) should follow the `TOPOFIT_` prefix (e.g., `TOPOFIT_OT_apply_symmetry`, `TOPOFIT_PT_panel`). This ensures a clean and unique namespace for the addon.
