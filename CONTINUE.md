@@ -105,3 +105,9 @@ When assisting with this codebase, **always adhere to the following architectura
 
 ### 6. Addon Naming Convention
 *   **Rule:** All custom Blender operators (`bpy.types.Operator`), panels (`bpy.types.Panel`), and custom data properties (`bpy.props.Property`) should follow the `TOPOFIT_` prefix (e.g., `TOPOFIT_OT_apply_symmetry`, `TOPOFIT_PT_panel`). This ensures a clean and unique namespace for the addon.
+
+---
+
+## AI Agent Response Formatting (For AI Agents)
+
+*   **Rule:** Always wrap all file content and multi-line code/text snippets intended for direct cut-and-paste by the user in a single, properly formatted markdown code block using four backticks. Ensure no other text or markdown elements break this single block to facilitate easy copying. This ensures clean rendering in the user's client.
